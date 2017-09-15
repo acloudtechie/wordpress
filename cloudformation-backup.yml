@@ -20,7 +20,7 @@
       "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
     },
   "MZCFDBAmiId": { "Type": "String", "Default":"ami-5fbb5a25" },
-  "MZCFAppAmiId": { "Type": "String", "Default":"ami-eebd5c94" },
+  "MZCFAppAmiId": { "Type": "String", "Default":"ami-de9170a4" },
   "MZCFBastionAmiId": { "Type": "String", "Default":"ami-5daf213d" }
 
   },
@@ -323,7 +323,7 @@
       "Type" : "AWS::EC2::Instance",
     "DependsOn" : "DBEC2InstanceDBA",
       "Properties" : {
-        "InstanceType" : "t2.micro",
+        "InstanceType" : "t2.small",
         "SecurityGroupIds" : [ { "Ref" : "MZCFAppSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
     "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },

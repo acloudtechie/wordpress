@@ -9,7 +9,7 @@
       "MinLength": "3",
       "MaxLength": "25",
       "ConstraintDescription": "Must be in ALL CAPS with only DASHES as the separator. Examples: DEV-ECS1, US1, STAGING-US1.",
-    "Default": "MZCF-VPC", 
+      "Default": "MZCF-VPC", 
       "AllowedPattern": "^([a-zA-Z-\\d]+)"
     },
   
@@ -20,7 +20,7 @@
       "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
     },
   "MZCFDBAmiId": { "Type": "String", "Default":"ami-5fbb5a25" },
-  "MZCFAppAmiId": { "Type": "String", "Default":"ami-eebd5c94" },
+  "MZCFAppAmiId": { "Type": "String", "Default":"ami-de9170a4" },
   "MZCFBastionAmiId": { "Type": "String", "Default":"ami-c78061bd" }
 
   },
@@ -43,65 +43,39 @@
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "CidrBlock" : "10.0.1.0/24",
-    "MapPublicIpOnLaunch" : true,
-    "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
+        "MapPublicIpOnLaunch" : true,
+        "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
       }
     },
 
-  
   "PublicSubnetDMZB" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "CidrBlock" : "10.0.2.0/24",
-    "MapPublicIpOnLaunch" : true,
-    "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
+        "MapPublicIpOnLaunch" : true,
+        "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
       }
     },
-
-  
-  "PrivateSubnetAppA" : {
-      "Type" : "AWS::EC2::Subnet",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "CidrBlock" : "10.0.3.0/24",
-    "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
-        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
-      }
-    },
-    
-  "PrivateSubnetAppB" : {
-      "Type" : "AWS::EC2::Subnet",
-      "Properties" : {
-        "VpcId" : { "Ref" : "VPC" },
-        "CidrBlock" : "10.0.4.0/24",
-    "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
-        "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
-      }
-    },
-  
   
   "PrivateSubnetDBA" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "CidrBlock" : "10.0.5.0/24",
-    "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
+        "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
       }
     },
-  
-  
-  
   
   "PrivateSubnetDBB" : {
       "Type" : "AWS::EC2::Subnet",
       "Properties" : {
         "VpcId" : { "Ref" : "VPC" },
         "CidrBlock" : "10.0.6.0/24",
-    "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
+        "AvailabilityZone" : { "Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
         "Tags" : [ {"Key" : "Application", "Value" : { "Ref" : "AWS::StackId"} } ]
       }
     },
@@ -199,8 +173,6 @@
       }
     },  
   
-  
-  
     "PrivateRouteTableA" : { "Type": "AWS::EC2::RouteTable",
       "Properties" : {
         "VpcId" : {"Ref": "VPC"},
@@ -235,20 +207,6 @@
       "Properties" : {
         "SubnetId" : { "Ref" : "PublicSubnetDMZB" },
         "RouteTableId" : { "Ref" : "PublicRouteTable" }
-      }
-    },
-  
-    "AppARouteTableAssociation" : { "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties" : {
-        "SubnetId" : { "Ref" : "PrivateSubnetAppA" },
-        "RouteTableId" : { "Ref" : "PrivateRouteTableA" }
-      }
-    },
-  
-    "AppBRouteTableAssociation" : { "Type" : "AWS::EC2::SubnetRouteTableAssociation",
-      "Properties" : {
-        "SubnetId" : { "Ref" : "PrivateSubnetAppB" },
-        "RouteTableId" : { "Ref" : "PrivateRouteTableB" }
       }
     },
   
@@ -291,15 +249,13 @@
   
     "MZCFEC2InstanceAppA" : {
       "Type" : "AWS::EC2::Instance",
-    "DependsOn" : "DBEC2InstanceDBA",
+      "DependsOn" : "DBEC2InstanceDBA",
       "Properties" : {
-        "InstanceType" : "t2.micro",
-        "AssociatePublicIpAddress" : "True",
+        "InstanceType" : "t2.small",
         "SecurityGroupIds" : [ { "Ref" : "MZCFAppSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
         "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
-        "PrivateIpAddress" : "10.0.3.100",
-        "SubnetId" : {"Ref" : "PrivateSubnetAppA"},
+        "SubnetId" : {"Ref" : "PublicSubnetDMZA"},
         "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
              "#!/bin/bash \n",
              "yum update -y \n",
@@ -316,9 +272,9 @@
   
     "DBEC2InstanceDBA" : {
       "Type" : "AWS::EC2::Instance",
-    "DependsOn" : "BastionEC2InstanceDMZA",
+      "DependsOn" : "BastionEC2InstanceDMZA",
       "Properties" : {
-        "InstanceType" : "t2.micro",
+        "InstanceType" : "t2.small",
         "SecurityGroupIds" : [ { "Ref" : "DBSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
         "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
@@ -342,7 +298,7 @@
       "Type" : "AWS::EC2::SecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access via port 22",
-    "VpcId" : {"Ref" : "VPC"},
+        "VpcId" : {"Ref" : "VPC"},
         "SecurityGroupIngress" : [ {
           "IpProtocol" : "tcp",
           "FromPort" : "22",
@@ -354,37 +310,16 @@
   
     "MZCFAppSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
-    "DependsOn" : "WebDMZSecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access via port 22",
-    "VpcId" : {"Ref" : "VPC"},
+        "VpcId" : {"Ref" : "VPC"},
         "SecurityGroupIngress" : [ {
           "IpProtocol" : "tcp",
           "FromPort" : "22",
           "ToPort" : "22",
           "SourceSecurityGroupId": {"Ref" : "BastionSecurityGroup"}
         },
-    {
-          "IpProtocol" : "tcp",
-          "FromPort" : "8080",
-          "ToPort" : "8080",
-          "SourceSecurityGroupId": {"Ref" : "WebDMZSecurityGroup"}
-        }]
-      }
-    },
-
-    "WebDMZSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "GroupDescription" : "Enable SSH access via port 22",
-    "VpcId" : {"Ref" : "VPC"},
-        "SecurityGroupIngress" : [ {
-          "IpProtocol" : "tcp",
-          "FromPort" : "8080",
-          "ToPort" : "8080",
-          "CidrIp" : "0.0.0.0/0"
-        },
-    {
+        {
           "IpProtocol" : "tcp",
           "FromPort" : "80",
           "ToPort" : "80",
@@ -395,20 +330,20 @@
 
     "DBSecurityGroup" : {
       "Type" : "AWS::EC2::SecurityGroup",
-    "DependsOn" : "MZCFAppSecurityGroup",
+      "DependsOn" : "MZCFAppSecurityGroup",
       "Properties" : {
         "GroupDescription" : "Enable SSH access via port 22",
-    "VpcId" : {"Ref" : "VPC"},
+        "VpcId" : {"Ref" : "VPC"},
         "SecurityGroupIngress" : [ {
           "IpProtocol" : "tcp",
           "FromPort" : "22",
           "ToPort" : "22",
           "SourceSecurityGroupId": {"Ref" : "BastionSecurityGroup"}
         },
-    {
+        {
           "IpProtocol" : "tcp",
-          "FromPort" : "49161",
-          "ToPort" : "49161",
+          "FromPort" : "3306",
+          "ToPort" : "3306",
           "SourceSecurityGroupId": {"Ref" : "MZCFAppSecurityGroup"}
         }]
       }
