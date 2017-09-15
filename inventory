@@ -3,11 +3,8 @@ localhost ansible_connection=local
 
 [webserver]
 
+[db]
 
-
-
-
-
-
+[bastion]
 
 

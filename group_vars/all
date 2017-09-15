@@ -1,4 +1,6 @@
 ---
+ansible_ssh_user: ec2-user  
+ansible_ssh_private_key_file: ~/aws/Developer.pem
 
 aws_region:     "us-east-1"
 
@@ -16,6 +18,37 @@ public_subnet_2_cidr:  "10.0.11.0/24"
 private_subnet_2_cidr: "10.0.12.0/24"
 
 # ec2
-keypair: "AWS-MG-Developer"
-instance_type: "t2.micro"
-ami: "ami-4fffc834"
+keypair: "Candidate-kTnfb5F3"
+#keypair: "Candidate-kTnfb5F3"
+instance_type: "t2.small"
+#ami: "ami-cd0f5cb6" #ubuntu
+ami: "ami-4fffc834" #aws ami
+#ami: "ami-c998b6b2" #redhat
+#ami: "ami-27a58d5c" #ms server 2016
+
+
+
+# Which version of WordPress to deploy
+wp_version: 4.5.3
+#wp_sha256sum: 73c21224d42156150b948ca645a296a2431f1dd6a19350e0d8a72e465adde56d
+
+# These are the WordPress database settings
+wp_db_name: wordpress 
+wp_db_user: wordpress
+# Set your database password here 
+wp_db_password: secret
+wp_db_host: 10.0.2.41
+
+# WordPress settings
+
+# Disable All Updates
+# By default automatic updates are enabled, set this value to true to disable all automatic updates
+auto_up_disable: false
+
+#Define Core Update Level
+#true  = Development, minor, and major updates are all enabled
+#false = Development, minor, and major updates are all disabled
+#minor = Minor updates are enabled, development, and major updates are disabled
+core_update_level: true 
+
+bucketname: mz-wp-backup

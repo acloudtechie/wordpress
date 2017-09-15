@@ -1,0 +1,27 @@
+---
+- name: backup database and store in S3
+  hosts: tag_Name_db_1
+  gather_facts: no
+  vars:
+    bucketname: yan_wordpress
+  tasks:
+    - name: get date
+      shell: date +%Y%m%d
+      register: date
+      
+    - name: create mysql backup
+      shell: mysqldump -u {{ wp_db_user }} -p{{ wp_db_password }} {{ wp_db_name }} > /tmp/{{ date.stdout }}_backup.sql
+    
+    - name: archive backup
+      shell: tar -czf {{ date.stdout }}_backup.tar.gz {{ date.stdout }}_backup.sql && rm -f {{ date.stdout }}_backup.sql chdir=/tmp
+    
+    - fetch:
+        src: /tmp/{{ date.stdout }}_backup.tar.gz
+        dest: /tmp/{{ date.stdout }}_backup.tar.gz
+    
+    - name: upload backup archive
+      local_action:
+        module: s3_sync
+        bucket: "{{ bucketname }}"
+        file_root: /tmp
+        include: "*_backup.tar.gz"

@@ -125,31 +125,35 @@
     user_data: "{{ lookup('file', 'user_data.sh') }}"
   register: bastion
 
-- name: Add new instance to host group
-  add_host:
-    hostname: "{{ item.private_ip }}"
-    groupname: web, ec2
-  with_items: "{{ web.instances }}"
-
-- name: Add new instance to host group
-  add_host:
-    hostname: "{{ item.private_ip }}"
-    groupname: db, ec2
-  with_items: "{{ db.instances }}"
+- name: Debug web
+  debug: var=web
   
-- name: Add new instance to host group
-  add_host:
-    hostname: "{{ item.private_ip }}"
-    groupname: bastion, ec2
-  with_items: "{{ bastion.instances }}"
+- name: Debug db
+  debug: var=db
+  
+- name: Debug bastion
+  debug: var=bastion
 
-- name: Wait for SSH to come up
-  wait_for:
-    host: "{{ item.public_dns_name }}"
-    port: 22
-    delay: 60
-    timeout: 320
-    state: started
-  with_items: "{{ ec2.instances }}"
-
-     
+- name: Set the instances facts
+  set_fact:
+    web_ip_1: "{{ web.tagged_instances[0].private_ip }}"
+    web_id_1: "{{ web.tagged_instances[0].id }}"
+    db_ip_1: "{{ db.tagged_instances[0].private_ip }}"
+    db_id_1: "{{ db.tagged_instances[0].id }}" 
+    bastion_ip_1: "{{ bastion.tagged_instances[0].public_ip }}"
+    bastion_id_1: "{{ bastion.tagged_instances[0].id }}"
+    
+- name: update db intance ip in group_vars all
+  lineinfile: 
+    dest: ./group_vars/all 
+    regexp: '^(.*)wp_db_host: (.*)$' 
+    line: 'wp_db_host: {{ db_ip_1 }}'
+    backrefs: yes
+      
+- name: update bastion intance ip in the ssh.cfg
+  lineinfile: 
+    dest: ./ssh.cfg
+    regexp: '^(.*)ProxyCommand ssh -q -A ec2-user@(.*) nc -w 1800 %h %p(.*)$' 
+    line: '  ProxyCommand ssh -q -A ec2-user@{{ bastion_ip_1 }} nc -w 1800 %h %p'
+    backrefs: yes  
+    

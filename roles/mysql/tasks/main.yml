@@ -1,0 +1,23 @@
+---
+- name: install mysql server
+  yum: name={{ item }} state=present
+  with_items:
+   - mysql-devel
+   - mysql-server
+
+- name: install mysql-python 
+  pip: name=mysql-python state=present
+
+- name: create mysql configuration file
+  template: src=my.cnf.j2 dest=/etc/my.cnf
+  notify: restart mysql
+  
+- name: start mysql service
+  service: name=mysqld state=started enabled=true
+
+- name: create wordpress database
+  mysql_db: name={{ wp_db_name }} state=present
+
+- name: create wordpress database user
+  mysql_user: name={{ wp_db_user }} password={{ wp_db_password }} priv={{ wp_db_name }}.*:ALL host='%' state=present
+  

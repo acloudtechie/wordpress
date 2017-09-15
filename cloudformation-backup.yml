@@ -16,12 +16,12 @@
     "KeyName": {
       "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
       "Type": "AWS::EC2::KeyPair::KeyName",
-    "Default":"aws-us-east-1",
+    "Default":"aws-us-west-2",
       "ConstraintDescription" : "must be the name of an existing EC2 KeyPair."
     },
   "MZCFDBAmiId": { "Type": "String", "Default":"ami-5fbb5a25" },
   "MZCFAppAmiId": { "Type": "String", "Default":"ami-eebd5c94" },
-  "MZCFBastionAmiId": { "Type": "String", "Default":"ami-c78061bd" }
+  "MZCFBastionAmiId": { "Type": "String", "Default":"ami-5daf213d" }
 
   },
 
@@ -274,17 +274,28 @@
         "InstanceType" : "t2.micro",
         "SecurityGroupIds" : [ { "Ref" : "BastionSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
-        "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
-        "SubnetId" : {"Ref" : "PublicSubnetDMZA"},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+    "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
+    "SubnetId" : {"Ref" : "PublicSubnetDMZA"},
+    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
              "#!/bin/bash \n",
              "yum update -y \n" ]]}
         },
-        "Tags" : [
-            {"Key" : "Name", "Value" : "MZ Bastion"},
-            {"Key" : "Environment", "Value" :  "Dev" },
-            {"Key" : "Source", "Value" :   "CF" }
-        ],
+        "ImageId" : { "Ref": "MZCFBastionAmiId" }
+      }
+    },
+
+    "BastionEC2InstanceDMZB" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "InstanceType" : "t2.micro",
+        "SecurityGroupIds" : [ { "Ref" : "BastionSecurityGroup" } ],
+        "KeyName" : { "Ref" : "KeyName" },
+    "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
+    "SubnetId" : {"Ref" : "PublicSubnetDMZB"},
+    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+             "#!/bin/bash \n",
+             "yum update -y \n" ]]}
+        },
         "ImageId" : { "Ref": "MZCFBastionAmiId" }
       }
     },
@@ -294,25 +305,39 @@
     "DependsOn" : "DBEC2InstanceDBA",
       "Properties" : {
         "InstanceType" : "t2.micro",
-        "AssociatePublicIpAddress" : "True",
         "SecurityGroupIds" : [ { "Ref" : "MZCFAppSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
-        "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
-        "PrivateIpAddress" : "10.0.3.100",
-        "SubnetId" : {"Ref" : "PrivateSubnetAppA"},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+    "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
+    "PrivateIpAddress" : "10.0.3.100",
+    "SubnetId" : {"Ref" : "PrivateSubnetAppA"},
+    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
              "#!/bin/bash \n",
              "yum update -y \n",
              "/sbin/service httpd restart \n" ]]}
         },
-        "Tags" : [
-            {"Key" : "Name", "Value" : "MZ WP Web"},
-            {"Key" : "Environment", "Value" :  "Dev" },
-            {"Key" : "Source", "Value" :   "CF" }
-        ],
         "ImageId" : { "Ref": "MZCFAppAmiId" }
       }
     },
+
+    "MZCFEC2InstanceAppB" : {
+      "Type" : "AWS::EC2::Instance",
+    "DependsOn" : "DBEC2InstanceDBA",
+      "Properties" : {
+        "InstanceType" : "t2.micro",
+        "SecurityGroupIds" : [ { "Ref" : "MZCFAppSecurityGroup" } ],
+        "KeyName" : { "Ref" : "KeyName" },
+    "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "b" ] ] },
+    "PrivateIpAddress" : "10.0.4.100",
+    "SubnetId" : {"Ref" : "PrivateSubnetAppB"},
+    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+             "#!/bin/bash \n",
+             "yum update -y \n",
+             "/sbin/service httpd restart \n" ]]}
+        },
+        "ImageId" : { "Ref": "MZCFAppAmiId" }
+      }
+    },
+  
   
     "DBEC2InstanceDBA" : {
       "Type" : "AWS::EC2::Instance",
@@ -321,19 +346,14 @@
         "InstanceType" : "t2.micro",
         "SecurityGroupIds" : [ { "Ref" : "DBSecurityGroup" } ],
         "KeyName" : { "Ref" : "KeyName" },
-        "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
-        "PrivateIpAddress" : "10.0.5.100",
-        "SubnetId" : {"Ref" : "PrivateSubnetDBA"},
-        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+    "AvailabilityZone" : {"Fn::Join": [ "", [ { "Ref": "AWS::Region" }, "a" ] ] },
+    "PrivateIpAddress" : "10.0.5.100",
+    "SubnetId" : {"Ref" : "PrivateSubnetDBA"},
+    "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
              "#!/bin/bash \n",
              "yum update -y \n",
              "sudo /sbin/service mysqld start \n"]]}
         },
-        "Tags" : [
-            {"Key" : "Name", "Value" : "MZ WP DB"},
-            {"Key" : "Environment", "Value" :  "Dev" },
-            {"Key" : "Source", "Value" :   "CF" }
-        ],
         "ImageId" : { "Ref": "MZCFDBAmiId" }
       }
     },
@@ -411,6 +431,34 @@
           "ToPort" : "49161",
           "SourceSecurityGroupId": {"Ref" : "MZCFAppSecurityGroup"}
         }]
+      }
+    },
+  
+    "MZCFElasticLoadBalancer" : {
+      "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+    "DependsOn" : "MZCFEC2InstanceAppB",
+      "Properties" : {
+        "CrossZone" : "true",
+    "Subnets" : [{ "Ref" : "PublicSubnetDMZA" }, { "Ref" : "PublicSubnetDMZB" }],
+    "SecurityGroups" : [ { "Ref" : "WebDMZSecurityGroup"} ], 
+        "Instances" : [ { "Ref" : "MZCFEC2InstanceAppA" },{ "Ref" : "MZCFEC2InstanceAppB" } ],
+        "LBCookieStickinessPolicy" : [{
+          "PolicyName" : "myLBPolicy",
+          "CookieExpirationPeriod" : "180"
+        } ],
+        "Listeners" : [ {
+          "LoadBalancerPort" : "80",
+          "InstancePort" : "8080",
+          "Protocol" : "HTTP",
+          "PolicyNames" : [ "myLBPolicy" ]
+        } ],
+        "HealthCheck" : {
+          "Target" : "HTTP:8080/",
+          "HealthyThreshold" : "2",
+          "UnhealthyThreshold" : "2",
+          "Interval" : "10",
+          "Timeout" : "5"
+        }
       }
     }
 

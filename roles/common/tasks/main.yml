@@ -1,0 +1,5 @@
+---
+- name: install comman tools
+  yum: name={{ item }} state=present
+  with_items:
+   - gcc

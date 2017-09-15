@@ -1,11 +1,8 @@
 ---
- - name: Provision AWS Resources
-   hosts: local
-   connection: local
-   gather_facts: no
-   roles: 
+- name: Provision AWS Resources
+  hosts: local
+  connection: local
+  gather_facts: no
+  roles: 
      - vpc
      - ec2
-
-
-     
